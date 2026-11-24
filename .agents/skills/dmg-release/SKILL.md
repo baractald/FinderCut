@@ -24,11 +24,15 @@ description: >-
 ### 1. 确认并更新版本号与文案
 
 1. 检查现有版本与标签：`gh release list`、`git tag -l`、[`Resources/Info.plist`](../../../Resources/Info.plist)。
-2. 递增 `Resources/Info.plist` 中的 `CFBundleShortVersionString`（例如 `1.0.2` → `1.0.3`）与 `CFBundleVersion`（整数递增）。
-3. 同步更新 [`docs/index.html`](../../../docs/index.html) 中所有旧版本号引用、Release 下载链接（`releases/tag/v<新版本>`）以及 `zh`/`en` 双语文案。
+2. 确定目标版本号：
+   - `./build.sh` 每次编译都会自动递增 `Resources/Info.plist` 中的 `CFBundleShortVersionString` 末位（patch +1）与 `CFBundleVersion`（+1）；
+   - 如果本地调试编译时**已经**自动递增到一个尚未发布的新版本，或你需要手动指定大/中版本号（如 `1.1.0`），在下一步执行 `./build.sh --no-bump` 以免重复递增。
+3. 先完成（或确认）`build.sh` 编译后的目标版本号，再同步更新 [`docs/index.html`](../../../docs/index.html) 中所有旧版本号引用、Release 下载链接（`releases/tag/v<新版本>`）以及 `zh`/`en` 双语文案，确保网页、tag 与 `.app` 版本一致。
 4. 如本次包含面向用户的新特性或结构变动，同步更新 [`README.md`](../../../README.md) 与 [`README.zh-CN.md`](../../../README.zh-CN.md)。
 
 ### 2. 编译与二进制校验
+
+若本次尚未递增到目标发布版本，运行 `./build.sh`（否则使用 `./build.sh --no-bump` 避免二次递增）：
 
 ```zsh
 ./build.sh && \

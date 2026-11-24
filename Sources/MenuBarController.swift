@@ -9,6 +9,9 @@ final class MenuBarController: NSObject {
     private let loginItemManager: LoginItemManager
     private let soundFeedbackManager: SoundFeedbackManager
     private let hudController: HUDController
+    private let supportManager: SupportManager
+    private let updateChecker: UpdateChecker
+    private let aboutWindowController: AboutWindowController
     private let defaults: UserDefaults
 
     private let statusMenuItem = NSMenuItem(title: L10n.string("menu.status.initializing"), action: nil, keyEquivalent: "")
@@ -20,6 +23,9 @@ final class MenuBarController: NSObject {
     private let loginMenuItem = NSMenuItem(title: L10n.string("menu.launchAtLogin"), action: #selector(toggleLaunchAtLogin), keyEquivalent: "")
     private let hideMenuBarIconMenuItem = NSMenuItem(title: L10n.string("menu.hideMenuBarIcon"), action: #selector(hideMenuBarIcon), keyEquivalent: "")
     private let accessibilityMenuItem = NSMenuItem(title: L10n.string("menu.openAccessibility"), action: #selector(openAccessibilitySettings), keyEquivalent: "")
+    private let checkForUpdatesMenuItem = NSMenuItem(title: L10n.string("menu.checkForUpdates"), action: #selector(checkForUpdates), keyEquivalent: "")
+    private let aboutMenuItem = NSMenuItem(title: L10n.string("menu.about"), action: #selector(showAboutWindow), keyEquivalent: "")
+    private let supportMenuItem = NSMenuItem(title: L10n.string("menu.support"), action: #selector(openSupportPage), keyEquivalent: "")
     private let quitMenuItem = NSMenuItem(title: L10n.string("menu.quit"), action: #selector(quitApp), keyEquivalent: "q")
 
     private var languageOptionItems: [(AppLanguage, NSMenuItem)] = []
@@ -39,12 +45,18 @@ final class MenuBarController: NSObject {
         loginItemManager: LoginItemManager,
         soundFeedbackManager: SoundFeedbackManager,
         hudController: HUDController,
+        supportManager: SupportManager,
+        updateChecker: UpdateChecker,
+        aboutWindowController: AboutWindowController,
         defaults: UserDefaults = .standard
     ) {
         self.keyInterceptor = keyInterceptor
         self.loginItemManager = loginItemManager
         self.soundFeedbackManager = soundFeedbackManager
         self.hudController = hudController
+        self.supportManager = supportManager
+        self.updateChecker = updateChecker
+        self.aboutWindowController = aboutWindowController
         self.defaults = defaults
         self.statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         super.init()
@@ -134,6 +146,16 @@ final class MenuBarController: NSObject {
         menu.addItem(.separator())
         menu.addItem(accessibilityMenuItem)
 
+        checkForUpdatesMenuItem.target = self
+        menu.addItem(checkForUpdatesMenuItem)
+
+        aboutMenuItem.target = self
+        menu.addItem(aboutMenuItem)
+
+        supportMenuItem.target = self
+        menu.addItem(supportMenuItem)
+
+        menu.addItem(.separator())
         quitMenuItem.target = self
         menu.addItem(quitMenuItem)
 
@@ -149,6 +171,9 @@ final class MenuBarController: NSObject {
         loginMenuItem.title = L10n.string("menu.launchAtLogin")
         hideMenuBarIconMenuItem.title = L10n.string("menu.hideMenuBarIcon")
         accessibilityMenuItem.title = L10n.string("menu.openAccessibility")
+        checkForUpdatesMenuItem.title = L10n.string("menu.checkForUpdates")
+        aboutMenuItem.title = L10n.string("menu.about")
+        supportMenuItem.title = L10n.string("menu.support")
         quitMenuItem.title = L10n.string("menu.quit")
 
         let activeLanguage = L10n.currentLanguage
@@ -231,6 +256,7 @@ final class MenuBarController: NSObject {
         }
         L10n.currentLanguage = selected
         refreshUI()
+        aboutWindowController.refreshLocalization()
     }
 
     @objc private func toggleLaunchAtLogin() {
@@ -295,6 +321,18 @@ final class MenuBarController: NSObject {
         if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility") {
             NSWorkspace.shared.open(url)
         }
+    }
+
+    @objc private func checkForUpdates() {
+        updateChecker.checkForUpdates(interactive: true)
+    }
+
+    @objc private func showAboutWindow() {
+        aboutWindowController.show()
+    }
+
+    @objc private func openSupportPage() {
+        supportManager.openSupportPage()
     }
 
     @objc private func quitApp() {

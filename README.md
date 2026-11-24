@@ -45,6 +45,9 @@ FinderCut/
 │   ├── SoundFeedbackManager.swift   # Subtle sound feedback & persisted toggle
 │   ├── MenuBarController.swift      # Status menu, toggles, language switcher & icon visibility
 │   ├── LoginItemManager.swift       # SMAppService launch-at-login & Settings redirect
+│   ├── SupportManager.swift         # Menu support action & sparse local reminder
+│   ├── UpdateChecker.swift          # GitHub Release update checker (startup & manual)
+│   ├── AboutWindowController.swift  # Native About window with version & quick actions
 │   └── L10n.swift                   # Localization & persisted language preference
 ├── Resources/
 │   ├── Info.plist                   # Bundle configuration (LSUIElement=true & localizations)

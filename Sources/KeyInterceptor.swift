@@ -49,6 +49,7 @@ final class KeyInterceptor {
 
     var onCutStateChanged: ((CutState) -> Void)?
     var onTapStateChanged: ((Bool) -> Void)?
+    var onMoveCompleted: (() -> Void)?
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
@@ -234,6 +235,7 @@ final class KeyInterceptor {
                 postSyntheticKey(keyCode: keyMap.keyCodeV, flags: [.maskCommand, .maskAlternate])
                 DispatchQueue.main.async { [weak self] in
                     self?.clearCutState()
+                    self?.onMoveCompleted?()
                 }
                 return nil
             } else if case .pending = cutState {

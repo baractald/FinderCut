@@ -8,6 +8,39 @@ CONTENTS_DIR="$APP_BUNDLE/Contents"
 MACOS_DIR="$CONTENTS_DIR/MacOS"
 RESOURCES_DIR="$CONTENTS_DIR/Resources"
 
+NO_BUMP="${NO_VERSION_BUMP:-0}"
+for arg in "$@"; do
+  case "$arg" in
+    --no-bump)
+      NO_BUMP=1
+      ;;
+    *)
+      echo "Unknown option: $arg" >&2
+      echo "Usage: $0 [--no-bump]" >&2
+      exit 1
+      ;;
+  esac
+done
+
+INFO_PLIST="$SCRIPT_DIR/Resources/Info.plist"
+if [[ "$NO_BUMP" != "1" ]]; then
+  OLD_SHORT_VERSION="$(plutil -extract CFBundleShortVersionString raw -o - "$INFO_PLIST")"
+  OLD_BUILD_VERSION="$(plutil -extract CFBundleVersion raw -o - "$INFO_PLIST")"
+  NEW_SHORT_VERSION="$(python3 - "$OLD_SHORT_VERSION" <<'PY'
+import sys
+parts = sys.argv[1].strip().split(".")
+if len(parts) < 3:
+    parts = (parts + ["0", "0"])[:3]
+parts[-1] = str(int(parts[-1]) + 1)
+print(".".join(parts))
+PY
+)"
+  NEW_BUILD_VERSION="$((OLD_BUILD_VERSION + 1))"
+  plutil -replace CFBundleShortVersionString -string "$NEW_SHORT_VERSION" "$INFO_PLIST"
+  plutil -replace CFBundleVersion -string "$NEW_BUILD_VERSION" "$INFO_PLIST"
+  echo "Bumped version: ${OLD_SHORT_VERSION} (${OLD_BUILD_VERSION}) -> ${NEW_SHORT_VERSION} (${NEW_BUILD_VERSION})"
+fi
+
 rm -rf "$APP_BUNDLE"
 mkdir -p "$MACOS_DIR" "$RESOURCES_DIR"
 

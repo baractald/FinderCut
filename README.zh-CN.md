@@ -45,6 +45,9 @@ FinderCut/
 │   ├── SoundFeedbackManager.swift   # 轻量系统提示音反馈与开关持久化
 │   ├── MenuBarController.swift      # 菜单栏状态展示、选项开关与语言切换
 │   ├── LoginItemManager.swift       # SMAppService 登录项管理与设置跳转
+│   ├── SupportManager.swift         # 菜单栏支持入口与低频本地提示
+│   ├── UpdateChecker.swift          # GitHub Release 检查更新（手动与启动检查）
+│   ├── AboutWindowController.swift  # 原生关于窗口（版本信息与快捷操作）
 │   └── L10n.swift                   # 本地化与语言偏好持久化
 ├── Resources/
 │   ├── Info.plist                   # Bundle 配置（LSUIElement=true、支持语言列表）

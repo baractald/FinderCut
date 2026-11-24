@@ -7,6 +7,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var keyInterceptor: KeyInterceptor!
     private var hudController: HUDController!
     private var soundFeedbackManager: SoundFeedbackManager!
+    private var supportManager: SupportManager!
+    private var updateChecker: UpdateChecker!
+    private var aboutWindowController: AboutWindowController!
     private var permissionTimer: Timer?
     private var healthTimer: Timer?
     private var wakeObserver: NSObjectProtocol?
@@ -33,13 +36,26 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         hudController = HUDController()
         soundFeedbackManager = SoundFeedbackManager()
+        supportManager = SupportManager()
+        updateChecker = UpdateChecker()
+        aboutWindowController = AboutWindowController(
+            updateChecker: updateChecker,
+            supportManager: supportManager
+        )
         keyInterceptor = KeyInterceptor()
         menuBarController = MenuBarController(
             keyInterceptor: keyInterceptor,
             loginItemManager: LoginItemManager(),
             soundFeedbackManager: soundFeedbackManager,
-            hudController: hudController
+            hudController: hudController,
+            supportManager: supportManager,
+            updateChecker: updateChecker,
+            aboutWindowController: aboutWindowController
         )
+
+        updateChecker.onBeforePresentingUpdateAlert = { [weak self] in
+            self?.supportManager.cancelScheduledPrompt()
+        }
 
         if let bundleID = Bundle.main.bundleIdentifier {
             reopenObserver = DistributedNotificationCenter.default().addObserver(
@@ -55,10 +71,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             DispatchQueue.main.async {
                 self?.menuBarController.updateCutState(state)
                 if case .pending(let count) = state {
+                    self?.supportManager.cancelScheduledPrompt()
                     self?.hudController.showCutHUD(itemCount: count)
                     self?.soundFeedbackManager.playCutSuccessIfEnabled()
                 }
             }
+        }
+
+        keyInterceptor.onMoveCompleted = { [weak self] in
+            self?.supportManager.recordCompletedMove(canPromptNow: { [weak self] in
+                self?.keyInterceptor.cutState == .idle
+            })
         }
 
         keyInterceptor.onTapStateChanged = { [weak self] active in
@@ -84,6 +107,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
 
         startInterceptorOrPollPermission(promptUser: true)
+        updateChecker.scheduleStartupCheck(delay: 3.0)
     }
 
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
@@ -95,6 +119,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         permissionTimer?.invalidate()
         permissionTimer = nil
         stopHealthMonitor()
+        supportManager?.cancelScheduledPrompt()
+        updateChecker?.cancelScheduledStartupCheck()
         if let wakeObserver = wakeObserver {
             NSWorkspace.shared.notificationCenter.removeObserver(wakeObserver)
             self.wakeObserver = nil
@@ -117,6 +143,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 permissionTimer?.invalidate()
                 permissionTimer = nil
                 startHealthMonitor()
+                supportManager.schedulePromptIfEligible(delay: 4.0) { [weak self] in
+                    self?.keyInterceptor.cutState == .idle
+                }
                 return
             }
         } else {
@@ -133,6 +162,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                     self.permissionTimer?.invalidate()
                     self.permissionTimer = nil
                     self.startHealthMonitor()
+                    self.supportManager.schedulePromptIfEligible(delay: 4.0) { [weak self] in
+                        self?.keyInterceptor.cutState == .idle
+                    }
                 }
             }
         }
