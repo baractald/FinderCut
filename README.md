@@ -8,7 +8,7 @@ A lightweight, zero-dependency native macOS menu bar utility that brings familia
 
 - **Native Finder Move Engine**: Pressing `⌘X` triggers a standard copy and marks items as pending cut; pressing `⌘V` in the destination directory translates cleanly to Finder's native `⌥⌘V` (*Move Item Here*). Preserves native progress dialogs, conflict resolution, cross-volume moves, and `⌘Z` Undo—with zero Finder process injection and no SIP changes required.
 - **Smart Input & Preview Bypass**: Automatically detects inline file renaming, search fields, Get Info tag fields (`AXTokenField`), password prompts (`AXSecureTextField`), sheets, and Quick Look preview windows so regular text cut/paste stays untouched. Any subsequent clipboard copy automatically invalidates the pending cut state.
-- **Subtle Visual & Audio Feedback**: Rounded translucent HUD overlay, gentle system sound confirmation, and hideable menu bar icon (reopen FinderCut anytime to bring it back)—all independently toggleable and persisted.
+- **Subtle Visual & Audio Feedback**: Native macOS 26+ Liquid Glass HUD overlay (with a rounded frosted glass fallback on macOS 13–15), gentle system sound confirmation, and hideable menu bar icon (reopen FinderCut anytime to bring it back)—all independently toggleable and persisted.
 - **Multi-Language & Non-QWERTY Layout Support**: Ships with 8 languages (English, Simplified Chinese, Traditional Chinese, Japanese, Korean, French, German, Spanish), matching the system locale automatically with live menu bar switching, plus dynamic `X` / `C` / `V` key resolution via Carbon `TIS` / `UCKeyTranslate`.
 - **Single-Instance Guard & Self-Healing**: Prevents duplicate instances from intercepting events twice, and monitors Accessibility permission and `CGEventTap` health periodically and after system wake.
 
@@ -41,7 +41,7 @@ FinderCut/
 │   ├── KeyInterceptor.swift         # CGEventTap interception & cut/move state machine
 │   ├── KeyboardLayoutResolver.swift # Dynamic TIS/UCKeyTranslate shortcut key resolver
 │   ├── FocusInspector.swift         # AXUIElement focus & window bypass checks
-│   ├── HUDController.swift          # Rounded HUD overlay & persisted toggle
+│   ├── HUDController.swift          # Liquid Glass / frosted HUD overlay & persisted toggle
 │   ├── SoundFeedbackManager.swift   # Subtle sound feedback & persisted toggle
 │   ├── MenuBarController.swift      # Status menu, toggles, language switcher & icon visibility
 │   ├── LoginItemManager.swift       # SMAppService launch-at-login & Settings redirect
@@ -49,5 +49,7 @@ FinderCut/
 ├── Resources/
 │   ├── Info.plist                   # Bundle configuration (LSUIElement=true & localizations)
 │   └── *.lproj/Localizable.strings  # Localized strings for 8 languages
+├── docs/
+│   └── index.html                   # Single-file responsive product website
 └── build.sh                         # swiftc build, bundle assembly & signing script
 ```

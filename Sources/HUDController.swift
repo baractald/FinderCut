@@ -4,6 +4,7 @@ final class HUDController {
     private static let enabledKey = "cutHUDEnabled"
     private static let iconToShortcutSpacing: CGFloat = 16
     private let cornerRadius: CGFloat = 20
+    private let glassCornerRadius: CGFloat = 28
 
     private let defaults: UserDefaults
     private var panel: NSPanel?
@@ -91,16 +92,6 @@ final class HUDController {
         newPanel.level = NSWindow.Level(rawValue: Int(CGWindowLevelForKey(.overlayWindow)))
         newPanel.collectionBehavior = [.canJoinAllSpaces, .stationary, .ignoresCycle, .fullScreenAuxiliary]
 
-        let visualEffect = NSVisualEffectView(frame: NSRect(origin: .zero, size: size))
-        visualEffect.material = .hudWindow
-        visualEffect.blendingMode = .behindWindow
-        visualEffect.state = .active
-        visualEffect.maskImage = Self.makeCornerMaskImage(cornerRadius: cornerRadius)
-
-        let outlineView = HUDOutlineView(frame: visualEffect.bounds, cornerRadius: cornerRadius)
-        outlineView.autoresizingMask = [.width, .height]
-        visualEffect.addSubview(outlineView)
-
         let stack = NSStackView()
         stack.orientation = .vertical
         stack.alignment = .centerX
@@ -134,15 +125,48 @@ final class HUDController {
         stack.addArrangedSubview(subLabel)
         stack.setCustomSpacing(Self.iconToShortcutSpacing, after: iconView)
 
-        visualEffect.addSubview(stack)
-        NSLayoutConstraint.activate([
-            stack.centerXAnchor.constraint(equalTo: visualEffect.centerXAnchor),
-            stack.centerYAnchor.constraint(equalTo: visualEffect.centerYAnchor),
-            stack.leadingAnchor.constraint(greaterThanOrEqualTo: visualEffect.leadingAnchor, constant: 12),
-            stack.trailingAnchor.constraint(lessThanOrEqualTo: visualEffect.trailingAnchor, constant: -12)
-        ])
+        let bounds = NSRect(origin: .zero, size: size)
+        if #available(macOS 26.0, *) {
+            subLabel.font = NSFont.systemFont(ofSize: 12, weight: .medium)
 
-        newPanel.contentView = visualEffect
+            let contentContainer = NSView(frame: bounds)
+            contentContainer.autoresizingMask = [.width, .height]
+            contentContainer.addSubview(stack)
+            NSLayoutConstraint.activate([
+                stack.centerXAnchor.constraint(equalTo: contentContainer.centerXAnchor),
+                stack.centerYAnchor.constraint(equalTo: contentContainer.centerYAnchor),
+                stack.leadingAnchor.constraint(greaterThanOrEqualTo: contentContainer.leadingAnchor, constant: 12),
+                stack.trailingAnchor.constraint(lessThanOrEqualTo: contentContainer.trailingAnchor, constant: -12)
+            ])
+
+            let glassView = NSGlassEffectView(frame: bounds)
+            glassView.autoresizingMask = [.width, .height]
+            glassView.style = .clear
+            glassView.cornerRadius = glassCornerRadius
+            glassView.contentView = contentContainer
+            newPanel.contentView = glassView
+        } else {
+            let visualEffect = NSVisualEffectView(frame: bounds)
+            visualEffect.material = .hudWindow
+            visualEffect.blendingMode = .behindWindow
+            visualEffect.state = .active
+            visualEffect.maskImage = Self.makeCornerMaskImage(cornerRadius: cornerRadius)
+
+            let outlineView = HUDOutlineView(frame: visualEffect.bounds, cornerRadius: cornerRadius)
+            outlineView.autoresizingMask = [.width, .height]
+            visualEffect.addSubview(outlineView)
+
+            visualEffect.addSubview(stack)
+            NSLayoutConstraint.activate([
+                stack.centerXAnchor.constraint(equalTo: visualEffect.centerXAnchor),
+                stack.centerYAnchor.constraint(equalTo: visualEffect.centerYAnchor),
+                stack.leadingAnchor.constraint(greaterThanOrEqualTo: visualEffect.leadingAnchor, constant: 12),
+                stack.trailingAnchor.constraint(lessThanOrEqualTo: visualEffect.trailingAnchor, constant: -12)
+            ])
+
+            newPanel.contentView = visualEffect
+        }
+
         newPanel.invalidateShadow()
         self.panel = newPanel
         self.iconView = iconView
