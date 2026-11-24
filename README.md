@@ -1,51 +1,53 @@
 # FinderCut
 
-一个轻量、零依赖的原生 macOS 菜单栏工具，为访达（Finder）补齐熟悉的 **`⌘X` 剪切 → `⌘V` 移动** 文件操作体验。
+**English** | [简体中文](./README.zh-CN.md)
 
-## 核心特性
+A lightweight, zero-dependency native macOS menu bar utility that brings familiar **`⌘X` Cut → `⌘V` Move** file workflows to Finder.
 
-- **复用访达原生移动引擎**：按 `⌘X` 触发复制并记录待移动状态，切到目标文件夹按 `⌘V` 自动改写为访达原生的 `⌥⌘V`（将项目移到这里），保留原生进度条、同名冲突处理、跨盘移动及 `⌘Z` 撤销，不注入访达进程，无需关闭 SIP。
-- **防误触保护**：自动识别访达内重命名输入框、搜索栏、简介标签栏（`AXTokenField`）、密码框（`AXSecureTextField`）、弹出 Sheet 以及 Quick Look（快速查看）窗口，保持系统原生文字剪切/粘贴；若在剪切后又复制了其他文本或文件，待移动状态会自动失效。
-- **轻量视觉与听觉反馈**：居中圆角毛玻璃 HUD 浮窗与轻量系统提示音，均可在菜单栏中单独开关并持久化偏好；菜单栏图标本身也支持隐藏，再次运行 FinderCut 即可重新显示。
-- **多语言与非 QWERTY 布局支持**：内置简体中文、繁体中文、英文、日文、韩文、法文、德文、西班牙文 8 种语言，默认跟随系统并支持菜单栏实时切换；支持根据当前键盘输入源动态映射 `X` / `C` / `V` 键位。
-- **单实例保护与状态自愈**：防止重复启动导致事件重复拦截；定期及唤醒后校验系统“辅助功能”权限与事件监听状态，权限被撤销或恢复时自动更新状态并重连。
+## Features
 
-## 系统要求
+- **Native Finder Move Engine**: Pressing `⌘X` triggers a standard copy and marks items as pending cut; pressing `⌘V` in the destination directory translates cleanly to Finder's native `⌥⌘V` (*Move Item Here*). Preserves native progress dialogs, conflict resolution, cross-volume moves, and `⌘Z` Undo—with zero Finder process injection and no SIP changes required.
+- **Smart Input & Preview Bypass**: Automatically detects inline file renaming, search fields, Get Info tag fields (`AXTokenField`), password prompts (`AXSecureTextField`), sheets, and Quick Look preview windows so regular text cut/paste stays untouched. Any subsequent clipboard copy automatically invalidates the pending cut state.
+- **Subtle Visual & Audio Feedback**: Rounded translucent HUD overlay, gentle system sound confirmation, and hideable menu bar icon (reopen FinderCut anytime to bring it back)—all independently toggleable and persisted.
+- **Multi-Language & Non-QWERTY Layout Support**: Ships with 8 languages (English, Simplified Chinese, Traditional Chinese, Japanese, Korean, French, German, Spanish), matching the system locale automatically with live menu bar switching, plus dynamic `X` / `C` / `V` key resolution via Carbon `TIS` / `UCKeyTranslate`.
+- **Single-Instance Guard & Self-Healing**: Prevents duplicate instances from intercepting events twice, and monitors Accessibility permission and `CGEventTap` health periodically and after system wake.
 
-- macOS 13.0 或更高版本
-- Apple Silicon（`arm64`）
+## Requirements
 
-## 编译与安装
+- macOS 13.0 or later
+- Apple Silicon (`arm64`)
+
+## Build & Install
 
 ```zsh
 ./build.sh
 ```
 
-脚本会编译生成并签名工作区根目录下的 `FinderCut.app`。将 `FinderCut.app` 拖入或复制到 `/Applications/` 后运行，并在首次提示时于 **系统设置 → 隐私与安全性 → 辅助功能** 中勾选允许 `FinderCut`。
+This compiles and signs `FinderCut.app` in the repository root. Drag or copy `FinderCut.app` into `/Applications/`, launch it, and grant permission under **System Settings → Privacy & Security → Accessibility** when prompted.
 
-## 使用方法
+## Usage
 
-1. 在访达（或桌面）选中一个或多个文件/文件夹，按下 `⌘X`。
-2. 菜单栏剪刀图标旁显示 `⌘X` 标记（可选显示 HUD 与提示音）。
-3. 切换到目标目录后按 `⌘V` 完成移动，或随时按 `Esc` / 在菜单栏点击「取消当前剪切」退出待移动状态。
-4. 若在菜单栏选择了「隐藏菜单栏图标」，FinderCut 仍会在后台持续生效；之后随时通过启动台、聚焦搜索或 `/Applications/FinderCut.app` 再次打开即可恢复显示菜单栏图标。
+1. Select one or more files or folders in Finder (or on the Desktop) and press `⌘X`.
+2. The menu bar icon displays `⌘X` (with optional HUD overlay and sound feedback).
+3. Switch to the destination folder and press `⌘V` to move, or press `Esc` / click **Cancel Pending Cut** in the menu bar to abort.
+4. If you choose **Hide Menu Bar Icon**, FinderCut keeps running in the background; open FinderCut again anytime via Spotlight, Launchpad, or `/Applications/FinderCut.app` to restore the menu bar icon.
 
-## 工程结构
+## Project Structure
 
 ```text
 FinderCut/
 ├── Sources/
-│   ├── main.swift                   # 应用入口、单实例保护与权限/唤醒监控
-│   ├── KeyInterceptor.swift         # CGEventTap 全局键盘拦截与剪切状态机
-│   ├── KeyboardLayoutResolver.swift # 基于 TIS/UCKeyTranslate 的键位解析
-│   ├── FocusInspector.swift         # AXUIElement 焦点与窗口防误触检查
-│   ├── HUDController.swift          # 圆角毛玻璃 HUD 浮窗与开关持久化
-│   ├── SoundFeedbackManager.swift   # 轻量系统提示音反馈与开关持久化
-│   ├── MenuBarController.swift      # 菜单栏状态展示、选项开关与语言切换
-│   ├── LoginItemManager.swift       # SMAppService 登录项管理与设置跳转
-│   └── L10n.swift                   # 本地化与语言偏好持久化
+│   ├── main.swift                   # App entry, single-instance guard & permission/wake monitor
+│   ├── KeyInterceptor.swift         # CGEventTap interception & cut/move state machine
+│   ├── KeyboardLayoutResolver.swift # Dynamic TIS/UCKeyTranslate shortcut key resolver
+│   ├── FocusInspector.swift         # AXUIElement focus & window bypass checks
+│   ├── HUDController.swift          # Rounded HUD overlay & persisted toggle
+│   ├── SoundFeedbackManager.swift   # Subtle sound feedback & persisted toggle
+│   ├── MenuBarController.swift      # Status menu, toggles, language switcher & icon visibility
+│   ├── LoginItemManager.swift       # SMAppService launch-at-login & Settings redirect
+│   └── L10n.swift                   # Localization & persisted language preference
 ├── Resources/
-│   ├── Info.plist                   # Bundle 配置（LSUIElement=true、支持语言列表）
-│   └── *.lproj/Localizable.strings  # 8 种语言本地化文案
-└── build.sh                         # swiftc 编译、资源打包与签名脚本
+│   ├── Info.plist                   # Bundle configuration (LSUIElement=true & localizations)
+│   └── *.lproj/Localizable.strings  # Localized strings for 8 languages
+└── build.sh                         # swiftc build, bundle assembly & signing script
 ```
