@@ -1,0 +1,24 @@
+# Build outputs
+*.app/
+.build/
+DerivedData/
+*.dSYM/
+
+# macOS metadata
+.DS_Store
+**/.DS_Store
+._*
+
+# Xcode user state
+*.xcodeproj/xcuserdata/
+*.xcworkspace/xcuserdata/
+
+# Signing certificates, profiles & local secrets
+*.p12
+*.cer
+*.pem
+*.key
+*.mobileprovision
+*.provisionprofile
+.env
+.env.*
