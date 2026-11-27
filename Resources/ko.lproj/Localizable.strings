@@ -43,7 +43,6 @@
 "about.support" = "후원하기";
 "alert.update.available.title" = "새 버전 FinderCut v%@ 사용 가능";
 "alert.update.available.message" = "현재 버전은 v%@이며, GitHub에 최신 버전 v%@이 출시되었습니다.%@";
-"alert.update.available.accessibilityHint" = "참고: FinderCut.app을 교체한 후에는 시스템 설정 → 개인정보 보호 및 보안 → 손쉬운 사용에서 권한을 다시 활성화해 주세요.";
 "alert.update.download" = "다운로드 페이지로 이동";
 "alert.update.later" = "나중에 알림";
 "alert.update.skipVersion" = "이 버전 건너뛰기";

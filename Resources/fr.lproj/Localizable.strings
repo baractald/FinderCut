@@ -43,7 +43,6 @@
 "about.support" = "Soutenir";
 "alert.update.available.title" = "FinderCut v%@ est disponible";
 "alert.update.available.message" = "Vous utilisez actuellement la version v%@, et la v%@ est disponible sur GitHub.%@";
-"alert.update.available.accessibilityHint" = "Remarque : après avoir remplacé FinderCut.app, réactivez l'autorisation dans Réglages Système → Confidentialité et sécurité → Accessibilité.";
 "alert.update.download" = "Télécharger";
 "alert.update.later" = "Plus tard";
 "alert.update.skipVersion" = "Ignorer cette version";

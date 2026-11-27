@@ -43,7 +43,6 @@
 "about.support" = "開発を支援";
 "alert.update.available.title" = "新しいバージョン FinderCut v%@ が利用可能です";
 "alert.update.available.message" = "現在のバージョンは v%@、GitHub の最新版は v%@ です。%@";
-"alert.update.available.accessibilityHint" = "注意：FinderCut.app を入れ替えた後は、「システム設定 → プライバシーとセキュリティ → アクセシビリティ」で再度許可してください。";
 "alert.update.download" = "ダウンロードページへ";
 "alert.update.later" = "後で";
 "alert.update.skipVersion" = "このバージョンをスキップ";

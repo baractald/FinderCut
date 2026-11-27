@@ -43,7 +43,7 @@ otool -l ./FinderCut.app/Contents/MacOS/FinderCut | grep -A 3 LC_BUILD_VERSION
 
 确认输出：
 - `CFBundleShortVersionString` 与目标版本号一致；
-- `codesign --verify --deep --strict` 通过；
+- `codesign -dvv ./FinderCut.app` 显示 `Authority=Developer ID Application: ...`、`flags=...runtime` 与 `Timestamp=`，且 `codesign --verify --deep --strict` 通过；
 - `LC_BUILD_VERSION` 中包含 `minos 13.0`。
 
 ### 3. 提交并推送代码
@@ -62,11 +62,14 @@ trap 'rm -rf "$TMP_OUT"' EXIT
 ```
 
 该脚本会自动完成：
-- 验证 `./FinderCut.app` 签名与 `minos 13.0`；
+- 验证 `./FinderCut.app` 签名（含 Developer ID + Hardened Runtime + 安全时间戳检测）与 `minos 13.0`；
+- 若 `./FinderCut.app` 使用 `Developer ID Application` 签名且未传 `--no-notarize`：先将 `.app` 打包提交 Apple 公证（默认钥匙串配置 `FinderCut-Notary`）并 `xcrun stapler staple` 装订票据；
 - 使用 AppKit 生成 Retina 拖拽引导背景图（`.background/bg.tiff`）；
 - 创建可写 `UDRW`（HFS+）镜像后，先通过 AppleScript 配置无工具栏/状态栏的 `600×380` 内容区访达图标视图（左侧 `FinderCut.app`，右侧 `Applications` 软链接，中间 `→` 箭头）并写入 `.DS_Store`；
 - 待访达窗口关闭后再写入 `.VolumeIcon.icns` 并执行 `SetFile -a C` 启用自定义卷图标（避免访达脚本写入布局时移除卷图标文件）；
-- 转换为高压缩 `UDZO` 镜像 `FinderCut-v<版本>-arm64.dmg`，执行 `hdiutil verify` 与只读挂载全检（卷图标、`.DS_Store`、`Applications` 软链接、签名、版本号、`minos 13.0`），并生成 `FinderCut-v<版本>-arm64.dmg.sha256`。
+- 转换为高压缩 `UDZO` 镜像 `FinderCut-v<版本>-arm64.dmg` 并通过 `hdiutil verify`；
+- 若启用公证：对 `.dmg` 使用 `Developer ID Application` 签名并提交 Apple 公证、`xcrun stapler staple` 装订票据，执行 `spctl` Gatekeeper 验收；
+- 执行只读挂载全检（卷图标、`.DS_Store`、`Applications` 软链接、签名、版本号、`minos 13.0`，以及公证状态下的 `stapler validate` 与 `spctl` 检查），最后生成 `FinderCut-v<版本>-arm64.dmg.sha256`。
 
 ### 5. 发布 GitHub Release 并清理收尾
 
@@ -85,7 +88,7 @@ gh release create "v<版本>" \
 Release Notes 应写明：
 - 本次变更内容（What's Changed）；
 - `Full Changelog` 对比链接（`https://github.com/baractald/FinderCut/compare/v<旧版本>...v<版本>`）；
-- 安装与运行说明（macOS 13.0+ Apple Silicon `arm64`、拖拽安装、首次运行需授权「辅助功能」权限）。
+- 安装与运行说明（macOS 13.0+ Apple Silicon `arm64`、使用 Developer ID 签名并通过 Apple 公证、拖拽安装，首次运行需授权「辅助功能」权限，后续同证书更新自动保留权限）。
 
 2. 验证发布与仓库状态：
    - 运行 `gh release view "v<版本>"` 与 `gh release list`，确认新 Release 为 `Latest`、附件仅含 `.dmg` 与 `.dmg.sha256`，且历史版本未被修改；

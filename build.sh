@@ -143,7 +143,13 @@ SWIFT
 iconutil -c icns "$ICONSET_DIR" -o "$RESOURCES_DIR/AppIcon.icns"
 rm -rf "$(dirname "$ICONSET_DIR")"
 
-echo "Signing $APP_NAME.app (ad-hoc)..."
-codesign --force --deep --sign - "$APP_BUNDLE"
+SIGN_IDENTITY="${SIGN_IDENTITY:-$(security find-identity -v -p codesigning 2>/dev/null | sed -n 's/.*"\(Developer ID Application: [^"]*\)".*/\1/p' | head -n 1 || true)}"
+if [[ -n "$SIGN_IDENTITY" && "$SIGN_IDENTITY" != "-" ]]; then
+  echo "Signing $APP_NAME.app ($SIGN_IDENTITY, Hardened Runtime)..."
+  codesign --force --options runtime --timestamp --sign "$SIGN_IDENTITY" "$APP_BUNDLE"
+else
+  echo "Signing $APP_NAME.app (ad-hoc)..."
+  codesign --force --deep --sign - "$APP_BUNDLE"
+fi
 
 echo "Built successfully: $APP_BUNDLE"

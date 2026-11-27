@@ -1,9 +1,41 @@
 #!/bin/zsh
 set -euo pipefail
 
-if [[ $# -lt 2 || $# -gt 3 ]]; then
-  echo "Usage: $0 <app_path> <output_dir> [version]" >&2
+usage() {
+  echo "Usage: $0 [--notarize-profile <name>] [--no-notarize] <app_path> <output_dir> [version]" >&2
   exit 1
+}
+
+NOTARY_PROFILE="${NOTARY_PROFILE:-FinderCut-Notary}"
+NO_NOTARIZE=0
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --notarize-profile)
+      [[ $# -ge 2 ]] || usage
+      NOTARY_PROFILE="$2"
+      shift 2
+      ;;
+    --no-notarize)
+      NO_NOTARIZE=1
+      shift
+      ;;
+    --)
+      shift
+      break
+      ;;
+    -*)
+      echo "Unknown option: $1" >&2
+      usage
+      ;;
+    *)
+      break
+      ;;
+  esac
+done
+
+if [[ $# -lt 2 || $# -gt 3 ]]; then
+  usage
 fi
 
 APP_INPUT="${1:-./FinderCut.app}"
@@ -49,6 +81,24 @@ if [[ "$build_version_info" != *"minos 13.0"* ]]; then
   exit 1
 fi
 
+CODESIGN_DETAILS="$(codesign -dvv "$APP_PATH" 2>&1)"
+SIGN_IDENTITY="$(printf '%s\n' "$CODESIGN_DETAILS" | sed -n 's/^Authority=\(Developer ID Application: .*\)/\1/p' | head -n 1 || true)"
+SHOULD_NOTARIZE=0
+if [[ -n "$SIGN_IDENTITY" && "$NO_NOTARIZE" != "1" ]]; then
+  if [[ "$CODESIGN_DETAILS" != *"runtime"* ]]; then
+    echo "Error: Developer ID signed app must enable Hardened Runtime (--options runtime)" >&2
+    exit 1
+  fi
+  if [[ "$CODESIGN_DETAILS" != *"Timestamp="* ]]; then
+    echo "Error: Developer ID signed app must include a secure timestamp (--timestamp)" >&2
+    exit 1
+  fi
+  SHOULD_NOTARIZE=1
+  echo "Detected Developer ID signing authority: $SIGN_IDENTITY (notarization enabled, profile: $NOTARY_PROFILE)"
+else
+  echo "Skipping Apple notarization (--no-notarize or non-Developer-ID build)."
+fi
+
 VOL_NAME="FinderCut $VERSION"
 if [[ -e "/Volumes/$VOL_NAME" ]]; then
   echo "Error: volume already mounted at /Volumes/$VOL_NAME; detach it first" >&2
@@ -79,8 +129,49 @@ cleanup() {
 }
 trap cleanup EXIT
 
+notarize_artifact() {
+  local artifact_path="$1"
+  local json_out="$WORK_DIR/notary-result.json"
+  echo "Submitting $(basename "$artifact_path") to Apple Notary Service (profile: $NOTARY_PROFILE)..."
+  if ! xcrun notarytool submit "$artifact_path" \
+    --keychain-profile "$NOTARY_PROFILE" \
+    --wait \
+    --output-format json > "$json_out"; then
+    echo "Error: notarytool submission failed for $artifact_path" >&2
+    cat "$json_out" >&2 || true
+    exit 1
+  fi
+  python3 - "$json_out" "$NOTARY_PROFILE" <<'PY'
+import json, sys
+with open(sys.argv[1], "r", encoding="utf-8") as f:
+    data = json.load(f)
+status = data.get("status", "")
+sub_id = data.get("id", "unknown")
+print(f"Notary status: {status} (submission id: {sub_id})")
+if status != "Accepted":
+    print(
+        f"Notarization did not accept archive. Fetch detailed log with:\n"
+        f"  xcrun notarytool log {sub_id} --keychain-profile {sys.argv[2]}",
+        file=sys.stderr,
+    )
+    sys.exit(1)
+PY
+}
+
 mkdir -p "$STAGE_DIR/.background" "$VERIFY_MNT"
 ditto "$APP_PATH" "$STAGE_DIR/FinderCut.app"
+if [[ "$SHOULD_NOTARIZE" -eq 1 ]]; then
+  if xcrun stapler validate "$STAGE_DIR/FinderCut.app" >/dev/null 2>&1; then
+    echo "FinderCut.app already has a valid stapled notarization ticket; skipping redundant app submission."
+  else
+    APP_NOTARY_ZIP="$WORK_DIR/FinderCut-app.zip"
+    ditto -c -k --keepParent "$STAGE_DIR/FinderCut.app" "$APP_NOTARY_ZIP"
+    notarize_artifact "$APP_NOTARY_ZIP"
+    echo "Stapling notarization ticket to FinderCut.app..."
+    xcrun stapler staple "$STAGE_DIR/FinderCut.app"
+    xcrun stapler validate "$STAGE_DIR/FinderCut.app"
+  fi
+fi
 ln -s /Applications "$STAGE_DIR/Applications"
 
 echo "Generating Retina drag-to-Applications background..."
@@ -280,6 +371,18 @@ echo "Converting to compressed UDZO DMG: $DMG_PATH..."
 hdiutil convert "$RW_DMG" -format UDZO -imagekey zlib-level=9 -ov -o "$DMG_PATH" >/dev/null
 hdiutil verify "$DMG_PATH"
 
+if [[ "$SHOULD_NOTARIZE" -eq 1 ]]; then
+  echo "Signing DMG with $SIGN_IDENTITY..."
+  codesign --force --timestamp --sign "$SIGN_IDENTITY" "$DMG_PATH"
+  codesign --verify --strict --verbose=2 "$DMG_PATH"
+  notarize_artifact "$DMG_PATH"
+  echo "Stapling notarization ticket to DMG..."
+  xcrun stapler staple "$DMG_PATH"
+  xcrun stapler validate "$DMG_PATH"
+  echo "Running Gatekeeper check on DMG..."
+  spctl -a -vvv -t open --context context:primary-signature "$DMG_PATH"
+fi
+
 echo "Verifying final read-only DMG contents..."
 VERIFY_PLIST="$WORK_DIR/verify.plist"
 hdiutil attach -nobrowse -readonly -noautoopen -mountpoint "$VERIFY_MNT" -plist "$DMG_PATH" > "$VERIFY_PLIST"
@@ -331,6 +434,10 @@ if [[ "$mounted_build_ver" != *"minos 13.0"* ]]; then
   echo "Error: mounted binary does not target minos 13.0" >&2
   echo "$mounted_build_ver" >&2
   exit 1
+fi
+if [[ "$SHOULD_NOTARIZE" -eq 1 ]]; then
+  xcrun stapler validate "$VERIFY_MNT/FinderCut.app"
+  spctl -a -vvv -t execute "$VERIFY_MNT/FinderCut.app"
 fi
 
 hdiutil detach "$VERIFY_DEVICE" >/dev/null

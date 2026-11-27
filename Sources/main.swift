@@ -1,7 +1,7 @@
 import AppKit
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
-    private static let showMenuBarIconNotification = Notification.Name("com.local.FinderCut.showMenuBarIcon")
+    private static let showMenuBarIconNotification = Notification.Name("work.oneman.FinderCut.showMenuBarIcon")
 
     private var menuBarController: MenuBarController!
     private var keyInterceptor: KeyInterceptor!

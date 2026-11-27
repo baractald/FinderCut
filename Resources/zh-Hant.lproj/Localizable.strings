@@ -43,7 +43,6 @@
 "about.support" = "支持開發";
 "alert.update.available.title" = "發現新版本 FinderCut v%@";
 "alert.update.available.message" = "目前版本為 v%@，GitHub 上已發佈最新版本 v%@。%@";
-"alert.update.available.accessibilityHint" = "提示：替換更新 FinderCut.app 後，需在「系統設定 → 隱私權與安全性 → 輔助使用」中重新勾選授權。";
 "alert.update.download" = "前往下載";
 "alert.update.later" = "稍後再說";
 "alert.update.skipVersion" = "略過此版本";

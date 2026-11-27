@@ -274,14 +274,13 @@ final class UpdateChecker {
         let summary = Self.summarizeReleaseNotes(release.notes)
         let summaryBlock = summary.isEmpty ? "" : "\n\n\(summary)"
         let messageBody = L10n.format("alert.update.available.message", currentVersion, release.version, summaryBlock)
-        let fullMessage = "\(messageBody)\n\n\(L10n.string("alert.update.available.accessibilityHint"))"
 
         NSApp.activate(ignoringOtherApps: true)
         let alert = NSAlert()
         alert.alertStyle = .informational
         alert.icon = NSApp.applicationIconImage
         alert.messageText = L10n.format("alert.update.available.title", release.version)
-        alert.informativeText = fullMessage
+        alert.informativeText = messageBody
         alert.addButton(withTitle: L10n.string("alert.update.download"))
         alert.addButton(withTitle: L10n.string("alert.update.later"))
         alert.addButton(withTitle: L10n.string("alert.update.skipVersion"))
