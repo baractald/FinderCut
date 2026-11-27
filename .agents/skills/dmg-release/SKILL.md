@@ -90,6 +90,7 @@ Release Notes 应写明：
 - `Full Changelog` 对比链接（`https://github.com/baractald/FinderCut/compare/v<旧版本>...v<版本>`）；
 - 安装与运行说明（macOS 13.0+ Apple Silicon `arm64`、使用 Developer ID 签名并通过 Apple 公证、拖拽安装，首次运行需授权「辅助功能」权限，后续同证书更新自动保留权限）。
 
-2. 验证发布与仓库状态：
+2. 验证发布、同步官网并清理收尾：
    - 运行 `gh release view "v<版本>"` 与 `gh release list`，确认新 Release 为 `Latest`、附件仅含 `.dmg` 与 `.dmg.sha256`，且历史版本未被修改；
+   - 运行 `wrangler deploy` 将最新的 `docs/` 同步部署至 `https://findercut.oneman.work`，确保官网下载链接与最新版本一致；
    - 运行 `git status -sb` 确认工作区干净（`trap` 已自动清理临时输出目录）。

@@ -1,6 +1,6 @@
 # FinderCut
 
-**English** | [简体中文](./README.zh-CN.md)
+**English** | [简体中文](./README.zh-CN.md) | [Website](https://findercut.oneman.work)
 
 A lightweight, zero-dependency native macOS menu bar utility that brings familiar **`⌘X` Cut → `⌘V` Move** file workflows to Finder.
 
@@ -53,6 +53,8 @@ FinderCut/
 │   ├── Info.plist                   # Bundle configuration (LSUIElement=true & localizations)
 │   └── *.lproj/Localizable.strings  # Localized strings for 8 languages
 ├── docs/
-│   └── index.html                   # Single-file responsive product website
+│   ├── index.html                   # Single-file responsive product website
+│   └── og-image.png                 # Social share preview card (1200x630)
+├── wrangler.jsonc                   # Cloudflare Workers Static Assets & custom domain config
 └── build.sh                         # swiftc build, bundle assembly & signing script
 ```

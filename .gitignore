@@ -22,3 +22,6 @@ DerivedData/
 *.provisionprofile
 .env
 .env.*
+
+# Cloudflare Wrangler
+.wrangler/

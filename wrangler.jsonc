@@ -1,0 +1,14 @@
+{
+  "name": "findercut",
+  "compatibility_date": "2026-11-01",
+  "workers_dev": false,
+  "assets": {
+    "directory": "./docs"
+  },
+  "routes": [
+    {
+      "pattern": "findercut.oneman.work",
+      "custom_domain": true
+    }
+  ]
+}

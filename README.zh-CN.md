@@ -1,6 +1,6 @@
 # FinderCut
 
-[English](./README.md) | **简体中文**
+[English](./README.md) | **简体中文** | [官网](https://findercut.oneman.work)
 
 一个轻量、零依赖的原生 macOS 菜单栏工具，为访达（Finder）补齐熟悉的 **`⌘X` 剪切 → `⌘V` 移动** 文件操作体验。
 
@@ -53,6 +53,8 @@ FinderCut/
 │   ├── Info.plist                   # Bundle 配置（LSUIElement=true、支持语言列表）
 │   └── *.lproj/Localizable.strings  # 8 种语言本地化文案
 ├── docs/
-│   └── index.html                   # 单文件响应式产品官网
+│   ├── index.html                   # 单文件响应式产品官网
+│   └── og-image.png                 # 社交分享卡片封面图（1200x630）
+├── wrangler.jsonc                   # Cloudflare Workers 静态资源与自定义域名配置
 └── build.sh                         # swiftc 编译、资源打包与签名脚本
 ```
