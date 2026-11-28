@@ -17,13 +17,31 @@
 - macOS 13.0 或更高版本
 - Apple Silicon（`arm64`）
 
-## 编译与安装
+## 安装
+
+### Homebrew 一键安装（推荐）
+
+```zsh
+brew install --cask baractald/tap/findercut
+```
+
+后续升级版本：
+
+```zsh
+brew upgrade --cask findercut
+```
+
+### 直接下载 DMG
+
+从 [GitHub Releases](https://github.com/baractald/FinderCut/releases) 或 [findercut.oneman.work](https://findercut.oneman.work/) 下载最新经过 Developer ID 签名并完成 Apple 公证的 `FinderCut-v*.dmg`，将 `FinderCut.app` 拖入 `/Applications/` 后运行，并在首次提示时于 **系统设置 → 隐私与安全性 → 辅助功能** 中勾选允许 `FinderCut`。
+
+## 从源码编译
 
 ```zsh
 ./build.sh
 ```
 
-脚本会编译生成并签名工作区根目录下的 `FinderCut.app`。将 `FinderCut.app` 拖入或复制到 `/Applications/` 后运行，并在首次提示时于 **系统设置 → 隐私与安全性 → 辅助功能** 中勾选允许 `FinderCut`。
+脚本会编译生成并签名工作区根目录下的 `FinderCut.app`，将其拖入或复制到 `/Applications/` 后运行即可。
 
 ## 使用方法
 

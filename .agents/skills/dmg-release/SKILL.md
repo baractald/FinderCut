@@ -92,5 +92,6 @@ Release Notes 应写明：
 
 2. 验证发布、同步官网并清理收尾：
    - 运行 `gh release view "v<版本>"` 与 `gh release list`，确认新 Release 为 `Latest`、附件仅含 `.dmg` 与 `.dmg.sha256`，且历史版本未被修改；
+   - 更新 `baractald/homebrew-tap` 仓库中的 `Casks/findercut.rb`（同步新 `version` 与 `.dmg.sha256` 哈希），使用 `brew style --cask baractald/tap/findercut` 与 `brew audit --cask --strict --online baractald/tap/findercut` 校验通过后提交并推送至 `baractald/homebrew-tap`（注意使用 `baractald` / `20910395+baractald@users.noreply.github.com` 身份）；
    - 运行 `wrangler deploy` 将最新的 `docs/` 同步部署至 `https://findercut.oneman.work`，确保官网下载链接与最新版本一致；
    - 运行 `git status -sb` 确认工作区干净（`trap` 已自动清理临时输出目录）。

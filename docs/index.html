@@ -394,6 +394,65 @@
       border-color: var(--text-secondary);
     }
 
+    .brew-install {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin: 18px auto 0;
+      padding: 8px 10px 8px 14px;
+      max-width: 100%;
+      border-radius: 999px;
+      background: var(--surface);
+      border: 1px solid var(--border-strong);
+      box-shadow: var(--shadow-sm);
+      font-family: var(--font-mono);
+      font-size: 13px;
+      color: var(--text);
+    }
+
+    .brew-prompt {
+      color: var(--text-tertiary);
+      user-select: none;
+    }
+
+    .brew-install code {
+      font-family: var(--font-mono);
+      overflow-x: auto;
+      white-space: nowrap;
+      scrollbar-width: none;
+    }
+
+    .brew-install code::-webkit-scrollbar {
+      display: none;
+    }
+
+    .brew-copy {
+      appearance: none;
+      border: 1px solid var(--border);
+      background: var(--surface-muted);
+      color: var(--text-secondary);
+      border-radius: 999px;
+      padding: 4px 11px;
+      font-family: var(--font-sans);
+      font-size: 12px;
+      font-weight: 550;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    }
+
+    .brew-copy:hover {
+      background: var(--accent-soft);
+      color: var(--accent);
+      border-color: var(--accent-border);
+    }
+
+    .brew-copy.copied {
+      background: var(--success-soft);
+      color: var(--success);
+      border-color: transparent;
+    }
+
     /* Window Chrome */
     .traffic-lights {
       display: flex;
@@ -1117,6 +1176,12 @@
             <span data-i18n="hero.ctaSecondary">查看 GitHub</span>
           </a>
         </div>
+
+        <div class="brew-install" role="group" aria-label="Homebrew install command">
+          <span class="brew-prompt" aria-hidden="true">$</span>
+          <code id="brewCmd">brew install --cask baractald/tap/findercut</code>
+          <button id="copyBrewBtn" class="brew-copy" type="button" data-i18n="hero.copy">复制</button>
+        </div>
       </div>
     </section>
 
@@ -1439,6 +1504,8 @@
           'hero.subtitle': '选中文件按 ⌘X，切到目标目录按 ⌘V 直接移动。自动识别重命名、搜索框、密码框与快速查看，只管移动文件，绝不干扰文字编辑。',
           'hero.ctaPrimary': '下载 FinderCut v1.0.4',
           'hero.ctaSecondary': '查看 GitHub',
+          'hero.copy': '复制',
+          'hero.copied': '已复制',
           'steps.title': '极简三步，零学习成本',
           'steps.subtitle': '保留你在 Windows 养成的直觉，同时完全遵守 macOS 访达的安全移动机制。',
           'steps.s1Title': '选中文件按 ⌘X',
@@ -1528,6 +1595,8 @@
           'hero.subtitle': 'Press ⌘X to cut files and ⌘V to move them. Smart focus detection passes ⌘X straight through when renaming files, searching, or entering passwords.',
           'hero.ctaPrimary': 'Download FinderCut v1.0.4',
           'hero.ctaSecondary': 'View on GitHub',
+          'hero.copy': 'Copy',
+          'hero.copied': 'Copied',
           'steps.title': 'Simple Three-Step Workflow',
           'steps.subtitle': 'Keep your muscle memory while relying 100% on Finder’s native safe move engine.',
           'steps.s1Title': 'Select & Press ⌘X',
@@ -1683,6 +1752,48 @@
         var next = order[(order.indexOf(state.themeMode) + 1) % order.length];
         applyTheme(next);
       });
+
+      var copyBrewBtn = document.getElementById('copyBrewBtn');
+      var brewCmdEl = document.getElementById('brewCmd');
+      var copyResetTimer = null;
+      if (copyBrewBtn && brewCmdEl) {
+        copyBrewBtn.addEventListener('click', function () {
+          var cmdText = brewCmdEl.textContent.trim();
+          var markCopied = function () {
+            copyBrewBtn.setAttribute('data-i18n', 'hero.copied');
+            copyBrewBtn.textContent = i18n[state.lang]['hero.copied'];
+            copyBrewBtn.classList.add('copied');
+            if (copyResetTimer) clearTimeout(copyResetTimer);
+            copyResetTimer = setTimeout(function () {
+              copyBrewBtn.setAttribute('data-i18n', 'hero.copy');
+              copyBrewBtn.textContent = i18n[state.lang]['hero.copy'];
+              copyBrewBtn.classList.remove('copied');
+            }, 1800);
+          };
+
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(cmdText).then(markCopied, function () {
+              fallbackCopy(cmdText);
+              markCopied();
+            });
+          } else {
+            fallbackCopy(cmdText);
+            markCopied();
+          }
+
+          function fallbackCopy(text) {
+            var ta = document.createElement('textarea');
+            ta.value = text;
+            ta.setAttribute('readonly', '');
+            ta.style.position = 'fixed';
+            ta.style.opacity = '0';
+            document.body.appendChild(ta);
+            ta.select();
+            try { document.execCommand('copy'); } catch (_) {}
+            document.body.removeChild(ta);
+          }
+        });
+      }
 
       var brandIconEl = document.getElementById('brandIcon');
       if (brandIconEl) {

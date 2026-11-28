@@ -17,13 +17,31 @@ A lightweight, zero-dependency native macOS menu bar utility that brings familia
 - macOS 13.0 or later
 - Apple Silicon (`arm64`)
 
-## Build & Install
+## Install
+
+### Homebrew (Recommended)
+
+```zsh
+brew install --cask baractald/tap/findercut
+```
+
+To upgrade later:
+
+```zsh
+brew upgrade --cask findercut
+```
+
+### Direct Download
+
+Download the latest Apple Developer ID signed and Apple-notarized `FinderCut-v*.dmg` from [GitHub Releases](https://github.com/baractald/FinderCut/releases) or [findercut.oneman.work](https://findercut.oneman.work/), drag `FinderCut.app` into `/Applications/`, launch it, and grant permission under **System Settings → Privacy & Security → Accessibility** when prompted.
+
+## Build from Source
 
 ```zsh
 ./build.sh
 ```
 
-This compiles and signs `FinderCut.app` in the repository root. Drag or copy `FinderCut.app` into `/Applications/`, launch it, and grant permission under **System Settings → Privacy & Security → Accessibility** when prompted.
+This compiles and signs `FinderCut.app` in the repository root. Drag or copy `FinderCut.app` into `/Applications/` and launch it.
 
 ## Usage
 
