@@ -74,5 +74,10 @@ FinderCut/
 │   ├── index.html                   # Single-file responsive product website
 │   └── og-image.png                 # Social share preview card (1200x630)
 ├── wrangler.jsonc                   # Cloudflare Workers Static Assets & custom domain config
+├── LICENSE                          # GNU General Public License v3.0
 └── build.sh                         # swiftc build, bundle assembly & signing script
 ```
+
+## License
+
+Licensed under the [GNU General Public License v3.0](./LICENSE) — Copyright © 2026 baractald.

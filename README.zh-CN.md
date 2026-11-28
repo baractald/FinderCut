@@ -74,5 +74,10 @@ FinderCut/
 │   ├── index.html                   # 单文件响应式产品官网
 │   └── og-image.png                 # 社交分享卡片封面图（1200x630）
 ├── wrangler.jsonc                   # Cloudflare Workers 静态资源与自定义域名配置
+├── LICENSE                          # GNU General Public License v3.0 开源协议
 └── build.sh                         # swiftc 编译、资源打包与签名脚本
 ```
+
+## 开源协议
+
+基于 [GNU General Public License v3.0](./LICENSE) 开源 —— Copyright © 2026 baractald。
